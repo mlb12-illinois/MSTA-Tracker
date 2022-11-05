@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<link rel = "stylesheet" href="mystyle.css">
+<title>MST-Auth_Tracker</title>
+</head>
+<body>
+  <header>
+    <h1>MST-Auth_Tracker</h1>
+  </header>
+ <h2>Message Tree</h2>
+ <h3>Select a Message</h3>
+ 
+ <form onsubmit="onnewroot(); return false;">
+	<input id="newroot" pattern=".{36,36}" size="36" required>
+    <input type="submit" value="New Root ID">
+</form>
+
+ 
+ <ul id="ct1" class="tree">
+ </ul>	
+  
+<p id="p1"></p>
+
+  <script type="text/javascript">
+
+  var rootid = "";
+  var rowjsondata;
+  var msgid = "";
+ 
+  window.addEventListener('load', (event) => 
+  {
+	const queryString = window.location.search;
+ 	const urlParams = new URLSearchParams(queryString);
+ 	
+	if (urlParams.has('id')) 
+ 	{
+		rootid = urlParams.get('id');		 
+		tryit ();
+ 	}
+  })
+  
+ async  function tryit(){ 
+	    document.getElementById("p1").innerHTML = "";
+		var jsonData = {};
+		  jsonData["message_type"] = "GetTree";
+		  jsonData["root_message"] = rootid;
+
+	      //let response  = await fetch('http://R2sserver-env.eba-jzwtmsgx.us-east-2.elasticbeanstalk.com/MSTAServlet.html', {
+		  let response  = await fetch('http://localhost:8080/MSTA-Tracker/MSTAServlet.html', {
+	        headers: {
+	            'Content-Type': 'application/json'
+	            },
+		      method: "POST", 
+		      body: JSON.stringify(jsonData)
+		    });    
+		    let jsontreestr = await response.text();
+		    const jsontree = JSON.parse(jsontreestr);
+			//document.getElementById("p1").innerHTML = jsontree;
+			
+	 		let ul = document.getElementById('ct1');
+	 		//console.log(jsontree);
+	 		if("records" in jsontree) {
+	 			let length = jsontree["records"].length;
+		 		addsubtree(ul, jsontree["records"], 0, length);
+				
+		    	CollapsibleTree.apply();
+		    	//console.log(jsontree);
+		    	//console.log(jsontree["record"]);
+		    	//document.getElementById("newroot").value = jsontree["records"];	 			
+	 		}
+	 		else document.getElementById("newroot").value = "";
+
+		};
+
+
+function onnewroot() {
+	rootid =  document.getElementById("newroot").value;
+ 	document.getElementById("ct1").innerHTML = "";
+	tryit();
+
+
+}
+			
+
+		
+function addsubtree( ele,  rows, index, length){
+		//console.log(row["children"].length);
+		//console.log(JSON.stringify(row));
+		//let strstatus = JSON.stringify(row["record"]["status"]);
+		let rowindex = rows[index];
+		let row = JSON.parse(rowindex);
+		console.log(row);
+		
+		let jsontext = "Initiating Service<b> " + row["sending_servicename"] + "</b>:" + row["sending_instanceid"];			
+		let li = document.createElement('li');
+		li.setAttribute('data-value', JSON.stringify(row));
+	    ele.appendChild(li);
+ 	    let span = document.createElement('span');
+	    li.appendChild(span);
+	    span.innerHTML += jsontext;
+	    //li.appendChild(ele);		
+	    let ul = document.createElement('ul');
+	    li.appendChild(ul);
+	    ele = ul;
+		console.log("oy0");
+	    
+		let sending_instanceid = row['sending_instanceid'];		
+		let saveele = ele;
+		
+		
+		//console.log(row);
+	    while (sending_instanceid == row['sending_instanceid']) {
+			console.log("oy1");
+			if (msgid != row['msgid']) {
+			    msgid = row['msgid'];
+			    
+			    jsontext = "<b>Message ID:</b> " + row["msgid"];			
+	    		li = document.createElement('li');
+				li.setAttribute('data-value', JSON.stringify(row));				
+				saveele.appendChild(li);
+		 	    let span = document.createElement('span');
+		 	    li.appendChild(span);
+			    span.innerHTML += jsontext;
+			    ul = document.createElement('ul');
+			    li.appendChild(ul);
+			    ele = ul;
+				console.log("oy2");
+			}
+			else {
+				console.log("oy3");
+				//console.log(row["receiving_instanceid"] != null);
+				if (row["receiving_instanceid"] != null) {
+				    jsontext = "Receiving Service<b> " + row["receiving_servicename"] + "</b>:" + row["receiving_instanceid"] + " <b>Receiving Time:</b> " + row["create_timestamp"];			
+					console.log("Receive");
+				}
+				else {
+					jsontext = "Sending Service<b> " + row["sending_servicename"] + "</b>:" + row["sending_instanceid"] + " <b>Sending Time:</b> " + row["create_timestamp"];						
+					console.log("Send");
+				}
+				
+			    li = document.createElement('li');
+				li.setAttribute('data-value', JSON.stringify(row));
+			    ele.appendChild(li);
+			    let span = document.createElement('span');
+			    li.appendChild(span);
+			    span.innerHTML += jsontext;
+				index = index + 1;
+				if (index >= length) return;
+				rowindex = rows[index];
+				row = JSON.parse(rowindex);	
+			}
+		}
+	    //let jsontext = row["children"].length + " <b>Type:</b> " + strtype +   " <b>Status:</b> " + strstatus +  " <b>URL:</b> " + strurl;
+	    //let jsondata = JSON.stringify(row["record"]); // put the record as a string into data-value
+	    //jsontext = jsontext.replaceAll('"', '');
+		console.log("oy4");
+
+        addsubtree(saveele, rows, index, length);			
+	}
+ 
+
+   
+const CollapsibleTree = (function(){
+
+  // Makes all trees with the class 'tree' collapsible. The
+  // parameter is:
+  //
+  // doNotRecurse - true if sub-trees should not be made collapsible
+  var myele = null;
+  function apply(doNotRecurse){
+
+    [].forEach.call(document.getElementsByTagName('ul'), node => {
+
+      if (node.classList.contains('tree')){
+
+        applyTo(node, true);
+
+        if (!doNotRecurse){
+
+          [].forEach.call(node.getElementsByTagName('ul'), subnode => {
+            subnode.classList.add('tree')
+          });
+        }
+      }
+    })
+  }
+
+ 
+
+  // Makes the specified tree collapsible. The parameters are:
+  //
+  // node         - the tree element
+  // doNotRecurse - true if sub-trees should not be made collapsible
+	  let firsttime = 2;
+  function applyTo(node, doNotRecurse){
+
+    [].forEach.call(node.getElementsByTagName('li'), li => {
+
+      if (!doNotRecurse || node === li.parentNode){
+
+        li.style.userSelect       = 'none';
+        li.style.MozUserSelect    = 'none';
+        li.style.msUserSelect     = 'none';
+        li.style.WebkitUserSelect = 'none';
+
+        li.addEventListener('click', handleClick.bind(null, li));
+
+        toggle(li);
+        if (firsttime > 0) {
+        	firsttime = firsttime - 1;
+            toggle(li);
+       }
+
+      }
+
+    });
+
+  }
+
+  // Handles a click. The parameter is:
+  //
+  // node - the node for which clicks are being handled
+  function handleClick(node, e){
+
+    let li = e.target;
+    
+//document.getElementById("p1").innerHTML = li.innerHTML; //innerText textContent
+//document.getElementById("p1").innerHTML = li.childNodes[0].textContent ;
+
+//li.style.backgroundColor = "lightblue";
+
+    while (li.nodeName !== 'LI'){
+      li = li.parentNode;
+    }
+
+    if (li === node) {
+      toggle(node);
+    
+    	if (myele != li.querySelector("span"))
+    	{
+    	    //let jsondata = JSON.parse(li.getAttribute('data-value'));	// data-value has the record
+     	    let rowjsondata = JSON.parse(li.getAttribute('data-value'));	// data-value has the record
+    	    let jsondatastr = rowjsondata["msgid"];
+    	    //console.log("OY Click");
+   	    	//console.log(rowjsondata);
+    	    //let jsonstatusstr = JSON.stringify(jsondata["status"]);
+    	    
+   	    	//jsondatastr = jsondatastr.replaceAll('"', '');
+    	    document.getElementById("p1").innerHTML = "Selected message: " + jsondatastr;
+    	    
+    	    //jsonstatusstr = jsonstatusstr.replaceAll('"', '');
+	   	    //document.getElementById("p1").innerHTML = li.getAttribute('data-value');
+	    	if (myele != null)
+			    myele.style.backgroundColor = "#F0FFFF";
+		    myele = li.querySelector("span");
+		    myele.style.backgroundColor  = "#ADD8E6";
+		}
+    }
+  }
+
+  // Opens or closes the unordered tree elements directly within the
+  // specified node. The parameter is:
+  //
+  // node - the node containing the unordered tree elements
+  function toggle(node){
+
+
+    const open = node.classList.contains('treeClosed');
+    const uls  = node.getElementsByTagName('ul');
+    //console.log(node);
+
+    [].forEach.call(uls, ul => {
+
+       let li = ul;
+      while (li.nodeName !== 'LI'){
+        li = li.parentNode;
+      }
+
+      if (li === node){
+        ul.style.display = (open ? 'block' : 'none');
+      }
+
+    });
+
+    node.classList.remove('treeOpen');
+    node.classList.remove('treeClosed');
+
+    if (uls.length > 0){
+      node.classList.add('tree' + (open ? 'Open' : 'Closed'));
+    }
+
+  }
+
+  return {apply, applyTo};
+
+})();
+
+</script>
+</body>
+</html>

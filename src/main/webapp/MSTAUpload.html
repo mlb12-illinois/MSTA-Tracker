@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<link rel = "stylesheet" href="mystyle.css">
+<title>MSTAUpload</title>
+</head>
+<body>
+  <header>
+    <h1>MST-Auth Upload</h1>
+  </header>
+     <h3>Select Parameters</h3>
+ 	  <p id="p1">Select Parameters</p>
+  <form>
+ 	  <label for="servertype">MST-Auth or Base</label>
+	  <select class="servertype" data-style="btn-info" name="servertype" id="servertype">
+		        <option value="MST-Auth">MST-Auth</option>
+		        <option value="Base">Base</option>
+		</select>    
+		<br><br>
+ 	  <label for="communication">Communication</label>
+	  <select class="communication" data-style="btn-info" name="communication" id="communication">
+		        <option value="Synchronous">Synchronous</option>
+		        <option value="Asynchronous">Asynchronous</option>
+		</select>    
+		<br><br>
+	  <label for="iterations">Iterations</label>
+		<input name="iterations" id="iterations" type="number" min="0" step="1" value="1"/>
+ 		<br><br>
+	  <label for="file">Select Payload</label>
+       <input id="fileupload" type="file" name="fileupload" />
+      <br><br>
+      <button id="reset" type ="reset">Reset</button>
+      <br><br>
+      <button id="Run" type ="button" onclick="uploadFile(); return false;"> Run </button>
+  </form>
+      <br><br>
+ 	  <p id="p2">Response</p>
+   <script type="text/javascript">
+
+ 
+ function uploadFile() {
+ 	console.log("OY00");
+		document.getElementById("p1").innerHTML = "Started";
+		var iterations = document.getElementById("iterations").value;
+		var servertype = document.getElementById("servertype").value;
+		var communication = document.getElementById("communication").value;
+		var file = fileupload.files[0],
+		  read = new FileReader();
+		if (file == undefined) {
+		document.getElementById("p1").innerHTML = 'Select a file.';
+		 return;
+		}
+		read.readAsBinaryString(file);	  
+		read.onloadend = async function(){
+		document.getElementById("p1").innerHTML = "Uploading File<br>Do not refresh the browser";
+		var jsonData = {};
+		jsonData["communication"] = communication;
+		jsonData["iterations"] = iterations;
+		jsonData["payload"] = read.result;
+
+		var uri = "";
+		//let response  = await fetch("http://R2stestapp-env.eba-txcmd3gh.us-east-2.elasticbeanstalk.com/FileAPI.html", {
+		if (servertype == "MST-Auth") {
+			uri = "http://localhost:8080/MSTA-Gateway/MSTAGateway.html";
+		}
+		if (servertype == "Base") {
+			uri = "http://localhost:8080/MSTA-GatewayB/MSTAGatewayB.html";
+		}
+    	console.log("OY0");
+		let response  = await fetch(uri, {
+		    headers: {
+		        'Content-Type': 'application/json'
+			},
+			method: "POST", 
+			body: JSON.stringify(jsonData)
+		    });    
+		    let data = await response.text();
+	    	console.log(response);
+	    	console.log(data);
+			document.getElementById("p1").innerHTML = "Finished";
+			document.getElementById("p2").innerHTML = data;
+	  }
+	}  
+
+  function sleep(ms) {
+	  return new Promise(resolve => setTimeout(resolve, ms));
+	}
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+@charset "ISO-8859-1";
+body{
+ background-color: #F0FFFF;
+}
+header{
+ text-align: center;
+ height: 100px;
+ padding-top: 1px;
+ background-color: #191970;
+ color: #FFFFFF;
+ font-size: x-large;
+}
+h2{
+ margin-top: 2px;
+ text-align: center;
+ background-color: #4169E1;
+ color: #FFFFFF;
+}
+h3{
+ margin-top: 2px;
+ text-align: center;
+ background-color: #80bfff;
+}
+form{
+ width: 100%;
+ display: inline-block;
+}
+footer{
+ margin-top: 3%;
+ text-align: center;
+}
+
+li{
+  list-style-image : url('button.png');
+  cursor           : auto;
+}
+
+li.treeOpen{
+  list-style-image : url('button-open.png');
+  cursor           : pointer;
+}
+
+li.treeClosed{
+  list-style-image : url('button-closed.png');
+  cursor           : pointer;
+}
+
