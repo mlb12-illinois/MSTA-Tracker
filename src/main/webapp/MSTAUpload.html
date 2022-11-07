@@ -40,7 +40,7 @@
 
  
  function uploadFile() {
- 	console.log("OY00");
+ 	//console.log("OY00");
 		document.getElementById("p1").innerHTML = "Started";
 		var iterations = document.getElementById("iterations").value;
 		var servertype = document.getElementById("servertype").value;
@@ -58,16 +58,17 @@
 		jsonData["communication"] = communication;
 		jsonData["iterations"] = iterations;
 		jsonData["payload"] = read.result;
+		//console.log(JSON.stringify(jsonData))
 
 		var uri = "";
 		//let response  = await fetch("http://R2stestapp-env.eba-txcmd3gh.us-east-2.elasticbeanstalk.com/FileAPI.html", {
 		if (servertype == "MST-Auth") {
-			uri = "http://localhost:8080/MSTA-Gateway/MSTAGateway.html";
+			uri = "http://mstauth-env.eba-zgvgmydp.us-east-2.elasticbeanstalk.com/MSTA-Gateway/MSTAGateway.html";
 		}
 		if (servertype == "Base") {
-			uri = "http://localhost:8080/MSTA-GatewayB/MSTAGatewayB.html";
+			uri = "http://mstauth-env.eba-zgvgmydp.us-east-2.elasticbeanstalk.com/MSTA-GatewayB/MSTAGatewayB.html";
 		}
-    	console.log("OY0");
+    	//console.log("OY0");
 		let response  = await fetch(uri, {
 		    headers: {
 		        'Content-Type': 'application/json'
@@ -76,8 +77,8 @@
 			body: JSON.stringify(jsonData)
 		    });    
 		    let data = await response.text();
-	    	console.log(response);
-	    	console.log(data);
+	    	//console.log(response);
+	    	//console.log(data);
 			document.getElementById("p1").innerHTML = "Finished";
 			document.getElementById("p2").innerHTML = data;
 	  }
