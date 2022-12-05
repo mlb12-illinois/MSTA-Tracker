@@ -64,6 +64,8 @@
 		//let response  = await fetch("http://R2stestapp-env.eba-txcmd3gh.us-east-2.elasticbeanstalk.com/FileAPI.html", {
 		if (servertype == "MST-Auth") {
 			uri = "http://localhost:8080/MSTA-Gateway/MSTAGateway.html";
+			//uri = "http://mstauth-env.eba-zgvgmydp.us-east-2.elasticbeanstalk.com/MSTA-Gateway/MSTAGateway.html";
+			//uri = "http://mstabusinessprocess-env.eba-ju2e6jsw.us-east-1.elasticbeanstalk.com/MSTA-Gateway/MSTAGateway.html";
 		}
 		if (servertype == "Base") {
 			uri = "http://localhost:8080/MSTA-GatewayB/MSTAGatewayB.html";
@@ -76,7 +78,7 @@
 			method: "POST", 
 			body: JSON.stringify(jsonData)
 		    });    
-		    let data = await response.text();
+		    let data = await response.text();	
 	    	//console.log(response);
 	    	//console.log(data);
 			document.getElementById("p1").innerHTML = "Finished";
